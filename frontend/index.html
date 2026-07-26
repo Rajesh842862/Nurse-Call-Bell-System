@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<link rel="icon" type="image" href="./src/assets/alert.png" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>TAMSEN - Screen Monitoring</title>
+	</head>
+	<body>
+		<div id="root"></div>
+		<script>
+			const saved = localStorage.getItem("theme");
+			const theme = saved || "dark";
+			document.documentElement.setAttribute("data-theme", theme);
+		</script>
+		<script type="module" src="/src/main.tsx"></script>
+	</body>
+</html>
