@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import LOGO from "../assets/TamsenLogo.png";
 import useAlert from "../context/useAlert";
+import FullscreenToggle from "./FullscreenToggle";
 import ThemeToggle from "./ThemeToggle";
 
 const NavBar = () => {
@@ -73,6 +74,7 @@ const NavBar = () => {
 					)}
 				</div>
 
+				<FullscreenToggle />
 				<ThemeToggle />
 			</div>
 		</div>
