@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { io, Socket } from "socket.io-client";
+import { io,} from "socket.io-client";
+import type { Socket } from "socket.io-client";
 import { AlertContext } from "./AlertContext";
 import { Alert, AlertContextValue, ConnectionStatus, ProcessedReport, ReportResponse, ServerError } from "../types";
 
@@ -283,7 +284,7 @@ const AlertProvider = ({ children }: AlertProviderProps) => {
 		setConnectionStatus,
 		serverError,
 		setServerError,
-		socketRef: socketRef as React.RefObject<any>,
+		socketRef: socketRef as React.RefObject<Socket>,
 		audioRef,
 		sirenRef,
 		isUnlockedRef,

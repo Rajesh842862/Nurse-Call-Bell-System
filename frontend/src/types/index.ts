@@ -1,3 +1,4 @@
+import type { Socket } from "socket.io-client";
 export interface Alert {
 	id: number;
 	room: string;
@@ -91,7 +92,7 @@ export interface AlertContextValue {
 	setConnectionStatus: React.Dispatch<React.SetStateAction<ConnectionStatus>>;
 	serverError: ServerError | null;
 	setServerError: React.Dispatch<React.SetStateAction<ServerError | null>>;
-	socketRef: React.RefObject<any>;
+	socketRef: React.RefObject<Socket>;
 	audioRef: React.RefObject<HTMLAudioElement | null>;
 	sirenRef: React.RefObject<HTMLAudioElement | null>;
 	isUnlockedRef: React.RefObject<boolean>;

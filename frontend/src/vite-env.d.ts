@@ -24,3 +24,6 @@ declare module "*.mp3" {
 	const value: string;
 	export default value;
 }
+declare module "swiper/css";
+declare module "swiper/css/navigation";
+declare module "swiper/css/pagination";
