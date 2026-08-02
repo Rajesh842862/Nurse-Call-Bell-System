@@ -1,0 +1,693 @@
+/*==================================================
+=                RFID READER
+==================================================*/
+
+.rfid {
+  position: relative;
+  overflow: hidden;
+
+  width: 80px;
+  height: 96px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+
+  border-radius: 14px;
+  border: 3px solid #3f3f46;
+
+  background: linear-gradient(145deg, #2b2b2b, #0f0f0f);
+
+  box-shadow:
+    inset 0 2px 6px rgba(255,255,255,.09),
+    inset 0 -6px 12px rgba(0,0,0,.7),
+    0 12px 24px rgba(0,0,0,.45);
+}
+
+/*------------------------------------------
+  Beam Animation
+------------------------------------------*/
+
+.rfid::before{
+  content:"";
+  position:absolute;
+  inset:0;
+
+  background:linear-gradient(
+    to bottom,
+    transparent 12%,
+    rgba(34,197,94,.14) 50%,
+    transparent 88%
+  );
+
+  animation:beam 2.4s ease-in-out infinite;
+}
+
+@keyframes beam{
+
+  0%,
+  100%{
+    transform:translateY(-42%);
+    opacity:.5;
+  }
+
+  50%{
+    transform:translateY(42%);
+    opacity:1;
+  }
+
+}
+
+/*------------------------------------------
+  RFID LED
+------------------------------------------*/
+
+.led{
+  position:absolute;
+
+  top:9px;
+  right:9px;
+
+  width:10px;
+  height:10px;
+
+  border-radius:50%;
+
+  background:#4ade80;
+
+  box-shadow:0 0 10px #22c55e;
+}
+
+.led::after{
+
+  content:"";
+
+  position:absolute;
+  inset:0;
+
+  border-radius:50%;
+
+  background:inherit;
+
+  animation:ping 1.6s cubic-bezier(0,0,.2,1) infinite;
+
+}
+
+@keyframes ping{
+
+  0%{
+    transform:scale(1);
+    opacity:.7;
+  }
+
+  80%,
+  100%{
+    transform:scale(2.8);
+    opacity:0;
+  }
+
+}
+
+/*------------------------------------------
+  RFID Icon
+------------------------------------------*/
+
+.rfid svg{
+  position:relative;
+  z-index:2;
+  opacity:.92;
+}
+
+.rfid-label{
+
+  position:relative;
+  z-index:2;
+
+  font-family:var(--font-mono);
+
+  font-size:9.5px;
+
+  letter-spacing:.3em;
+
+  color:#d1d5db;
+
+}
+
+/*------------------------------------------
+  Scan Line
+------------------------------------------*/
+
+.scanline{
+
+  position:absolute;
+
+  left:12px;
+  right:12px;
+
+  height:2px;
+
+  border-radius:999px;
+
+  background:#4ade80;
+
+  box-shadow:
+    0 0 8px #22c55e,
+    0 0 18px #22c55e;
+
+  animation:scan 2.4s ease-in-out infinite;
+
+  z-index:3;
+
+}
+
+@keyframes scan{
+
+  0%,
+  100%{
+    top:74%;
+    opacity:.35;
+  }
+
+  50%{
+    top:16%;
+    opacity:1;
+  }
+
+}
+
+/*==================================================
+=              RFID ACTIVE
+==================================================*/
+
+.rfid.active::before{
+
+  background:linear-gradient(
+    to bottom,
+    transparent 12%,
+    rgba(34,197,94,.18) 50%,
+    transparent 88%
+  );
+
+}
+
+.rfid.active .led{
+
+  background:#22c55e;
+
+  box-shadow:
+    0 0 8px #22c55e,
+    0 0 18px #22c55e,
+    0 0 28px #22c55e;
+
+}
+
+.rfid.active .scanline{
+
+  background:#22c55e;
+
+  box-shadow:
+    0 0 8px #22c55e,
+    0 0 18px #22c55e,
+    0 0 28px #22c55e;
+
+}
+
+/*==================================================
+=             RFID INACTIVE
+==================================================*/
+
+.rfid.inactive::before{
+
+  background:linear-gradient(
+    to bottom,
+    transparent 12%,
+    rgba(239,68,68,.18) 50%,
+    transparent 88%
+  );
+
+}
+
+.rfid.inactive .led{
+
+  background:#ef4444;
+
+  box-shadow:
+    0 0 8px #ef4444,
+    0 0 18px #ef4444,
+    0 0 28px #ef4444;
+
+}
+
+.rfid.inactive .scanline{
+
+  background:#ef4444;
+
+  box-shadow:
+    0 0 8px #ef4444,
+    0 0 18px #ef4444,
+    0 0 28px #ef4444;
+
+}
+
+/*==================================================
+=             PANEL BUTTON
+==================================================*/
+
+.panel-btn{
+
+  cursor:pointer;
+
+  border:4px solid rgba(255,255,255,.72);
+
+  background:
+    radial-gradient(
+      circle at 30% 28%,
+      rgba(255,255,255,.45) 0%,
+      rgba(255,255,255,.08) 28%,
+      transparent 42%
+    ),
+    linear-gradient(
+      180deg,
+      var(--from) 0%,
+      color-mix(in srgb,var(--from) 82%,black) 45%,
+      var(--to) 100%
+    );
+
+  box-shadow:
+    inset 0 2px 4px rgba(255,255,255,.35),
+    inset 0 -10px 14px rgba(0,0,0,.28),
+    0 8px 0 rgba(0,0,0,.22),
+    0 14px 22px rgba(0,0,0,.32),
+    0 0 18px var(--glow);
+
+  transition:
+    transform .15s ease,
+    filter .15s ease,
+    box-shadow .15s ease;
+
+}
+
+.panel-btn:hover{
+
+  transform:translateY(-2px) scale(1.03);
+
+  filter:brightness(1.04);
+
+  box-shadow:
+    inset 0 2px 5px rgba(255,255,255,.4),
+    inset 0 -10px 14px rgba(0,0,0,.26),
+    0 10px 0 rgba(0,0,0,.2),
+    0 18px 28px rgba(0,0,0,.35),
+    0 0 24px var(--glow);
+
+}
+
+.panel-btn:active{
+
+  transform:translateY(5px) scale(.97);
+
+  box-shadow:
+    inset 0 3px 8px rgba(0,0,0,.28),
+    inset 0 -3px 6px rgba(255,255,255,.12),
+    0 3px 0 rgba(0,0,0,.22),
+    0 6px 12px rgba(0,0,0,.25),
+    0 0 12px var(--glow);
+
+}/*==================================================
+=                PANEL CONTAINER
+==================================================*/
+
+.panel-container {
+
+  background:#ffffff;
+
+  border:8px solid #e5e7eb;
+
+  border-radius:28px;
+
+  box-shadow:
+    0 18px 40px rgba(0,0,0,.12);
+
+}
+
+.panel-display{
+
+  background:#38bdf8;
+
+  border-radius:18px;
+
+}
+
+/*==================================================
+=                DEVICE CARD
+==================================================*/
+
+.device-card{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:16px;
+
+  padding:22px;
+
+  border-radius:18px;
+
+  background:#ffffff;
+
+  border:2px solid #d7dbe2;
+
+  box-shadow:
+    0 6px 18px rgba(0,0,0,.08);
+
+  transition:
+    transform .25s,
+    box-shadow .25s;
+
+}
+
+.device-card:hover{
+
+  transform:translateY(-3px);
+
+  box-shadow:
+    0 12px 28px rgba(0,0,0,.14);
+
+}
+
+.device-icon{
+
+  width:26px;
+
+  height:26px;
+
+  flex-shrink:0;
+
+}
+
+.location{
+  color:#2563eb;
+}
+
+.room{
+  color:#10b981;
+}
+
+.bed{
+  color:#7c3aed;
+}
+
+.device-title{
+
+  font-size:.78rem;
+
+  font-weight:700;
+
+  text-transform:uppercase;
+
+  letter-spacing:.22em;
+
+  color:#64748b;
+
+}
+
+.device-value{
+
+  margin-top:5px;
+
+  font-size:.92rem;
+
+  font-weight:700;
+
+  text-transform:uppercase;
+
+  color:#40444e;
+
+}
+
+/*==================================================
+=                DEMO MODE CARD
+==================================================*/
+
+.demoModeCard{
+
+  background:#ffffff;
+
+  border:2px solid #d7dbe2;
+
+  box-shadow:
+    0 6px 18px rgba(0,0,0,.08);
+
+}
+
+/*==================================================
+=                PANEL HEADER
+==================================================*/
+
+.panel-header{
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  padding:14px 22px;
+
+  margin-bottom:16px;
+
+  border-radius:18px;
+
+  transition:.25s;
+
+}
+
+.panel-room{
+
+  font-family:"Poppins",sans-serif;
+
+  font-size:1.45rem;
+
+  font-weight:700;
+
+  letter-spacing:.05em;
+
+}
+
+.panel-device{
+
+  margin-top:3px;
+
+  font-size:.74rem;
+
+  font-weight:600;
+
+  text-transform:uppercase;
+
+  letter-spacing:.35em;
+
+}
+
+.panel-status{
+
+  display:inline-flex;
+
+  align-items:center;
+
+  gap:8px;
+
+  padding:8px 18px;
+
+  border-radius:999px;
+
+  font-size:.72rem;
+
+  font-weight:700;
+
+  letter-spacing:.18em;
+
+  text-transform:uppercase;
+
+  transition:.25s;
+
+}
+
+.panel-status::before{
+
+  content:"";
+
+  width:7px;
+
+  height:7px;
+
+  border-radius:50%;
+
+  background:currentColor;
+
+  box-shadow:0 0 8px currentColor;
+
+}
+
+/*==================================================
+=                LIGHT THEME
+==================================================*/
+
+[data-theme="light"] .panel-header{
+
+  background:linear-gradient(180deg,#ffffff,#f8fafc);
+
+  border:2px solid #d8dde5;
+
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.9),
+    0 4px 14px rgba(15,23,42,.08);
+
+}
+
+[data-theme="light"] .panel-room{
+
+  color:#0f172a;
+
+}
+
+[data-theme="light"] .panel-device{
+
+  color:#64748b;
+
+}
+
+[data-theme="light"] .panel-status.active{
+
+  background:#16a34a;
+
+  color:#ffffff;
+
+}
+
+[data-theme="light"] .panel-status.inactive{
+
+  background:#dc2626;
+
+  color:#ffffff;
+
+}
+
+/*==================================================
+=                DARK THEME
+==================================================*/
+
+[data-theme="dark"] .panel-container{
+
+  background:#18181b;
+
+  border-color:#303030;
+
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.04),
+    0 20px 40px rgba(0,0,0,.45);
+
+}
+
+[data-theme="dark"] .panel-display{
+
+  background:linear-gradient(180deg,#155e75,#0f4c63);
+
+}
+
+[data-theme="dark"] .device-card{
+
+  background:#202124;
+
+  border-color:#3b3b3b;
+
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.03),
+    0 8px 20px rgba(0,0,0,.35);
+
+}
+
+[data-theme="dark"] .device-title{
+
+  color:#8f98a3;
+
+}
+
+[data-theme="dark"] .device-value{
+
+  color:#ffffff;
+
+}
+
+[data-theme="dark"] .location{
+
+  color:#60a5fa;
+
+}
+
+[data-theme="dark"] .room{
+
+  color:#34d399;
+
+}
+
+[data-theme="dark"] .bed{
+
+  color:#c084fc;
+
+}
+
+[data-theme="dark"] .demoModeCard{
+
+  background:#202124;
+
+  border-color:#3b3b3b;
+
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.03),
+    0 8px 20px rgba(0,0,0,.35);
+
+}
+
+[data-theme="dark"] .panel-header{
+
+  background:linear-gradient(180deg,#2a2c31,#1c1e22);
+
+  border:2px solid #3d424b;
+
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.05),
+    inset 0 -8px 16px rgba(0,0,0,.35),
+    0 8px 20px rgba(0,0,0,.35);
+
+}
+
+[data-theme="dark"] .panel-room{
+
+  color:#f8fafc;
+
+}
+
+[data-theme="dark"] .panel-device{
+
+  color:#94a3b8;
+
+}
+
+[data-theme="dark"] .panel-status.active{
+
+  background:#15803d;
+
+  color:#ffffff;
+
+}
+
+[data-theme="dark"] .panel-status.inactive{
+
+  background:#991b1b;
+
+  color:#ffffff;
+
+}
