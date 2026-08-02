@@ -5,6 +5,7 @@ import cors from "cors";
 import { pool } from "./config/db";
 import weeklyReportRoutes from "./routes/weeklyReportRoute";
 import reportRoutes from "./routes/reportRoute";
+import demoRoutes from "./routes/demoRoute";
 import generate from "./service/ttsService";
 import { ActiveAlert, AlertData, ServerErrorPayload } from "./types";
 
@@ -23,6 +24,7 @@ app.get("/", (_req, res) => {
 
 app.use("/api/report", reportRoutes);
 app.use("/api", weeklyReportRoutes);
+app.use("/api/demo", demoRoutes);
 
 const server = http.createServer(app);
 
