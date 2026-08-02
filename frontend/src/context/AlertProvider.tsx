@@ -3,6 +3,7 @@ import { io,} from "socket.io-client";
 import type { Socket } from "socket.io-client";
 import { AlertContext } from "./AlertContext";
 import { Alert, AlertContextValue, ConnectionStatus, ProcessedReport, ReportResponse, ServerError } from "../types";
+import useDemoShortcut from "../hooks/useDemoShortcut";
 
 const API_URL = import.meta.env.VITE_SERVER_APP_URL as string;
 
@@ -42,6 +43,9 @@ const AlertProvider = ({ children }: AlertProviderProps) => {
 		},
 	});
 
+	// demo page Navigate
+	  useDemoShortcut();
+	
 	const priorityMap: Record<string, number> = {
 		"code blue": 1,
 		emergency: 2,

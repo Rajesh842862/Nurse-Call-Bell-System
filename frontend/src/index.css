@@ -347,7 +347,7 @@ html::-webkit-scrollbar-thumb:hover {
 }
 
 /* ── Top Bar — Mobile ── */
-@media (max-width: 736px) {
+@media (max-width: 848px) {
   .topbar {
     flex-direction: column;
     align-items: center;

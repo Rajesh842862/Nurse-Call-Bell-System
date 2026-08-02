@@ -3,82 +3,79 @@ import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import LOGO from "../assets/TamsenLogo.png";
 import useAlert from "../context/useAlert";
+import useDemoShortcut from "../hooks/useDemoShortcut";
 import FullscreenToggle from "./FullscreenToggle";
 import ThemeToggle from "./ThemeToggle";
 
 const NavBar = () => {
-	const navigate = useNavigate();
+  const navigate = useNavigate();
 
-	const { connectionStatus, alerts } = useAlert();
+  const { isDemoMode } = useDemoShortcut();
 
-	const isDashboard = useLocation().pathname;
+  const { connectionStatus, alerts } = useAlert();
 
-	const handleNavigate = (): void => {
-		if (isDashboard === "/") {
-			navigate("/dashboard");
-		} else if (isDashboard === "/dashboard") {
-			navigate("/");
-		} else if (isDashboard === "/reports") {
-			navigate("/");
-		} else {
-			navigate(-1);
-		}
-	};
+  const isDashboard = useLocation().pathname;
 
-	const locationName = alerts[0]?.location || localStorage.getItem("lastLocation");
+  const handleNavigate = (): void => {
+    if (isDashboard === "/") {
+      navigate("/dashboard");
+    } else if (isDashboard === "/dashboard") {
+      navigate("/");
+    } else if (isDashboard === "/reports") {
+      navigate("/");
+    } else {
+      navigate(-1);
+    }
+  };
 
-	useEffect(() => {
-		if (alerts.length > 0 && alerts[0]?.location) {
-			localStorage.setItem("lastLocation", alerts[0].location);
-		}
-	}, [alerts]);
+  const locationName = alerts[0]?.location || localStorage.getItem("lastLocation");
 
-	return (
-		<div id="#topbar" className="topbar w-full ">
-			<div className="topbar-left sm:gap-0 ">
-				<div className="tamsen">
-					<img src={LOGO} alt="LOGO" />
-				</div>
-				<span className="topbar-title">Live Alerts</span>
-			</div>
+  useEffect(() => {
+    if (alerts.length > 0 && alerts[0]?.location) {
+      localStorage.setItem("lastLocation", alerts[0].location);
+    }
+  }, [alerts]);
 
-			<div className="topbar-right">
-				<div className="status-bar">
-					<div className={`status-dot ${connectionStatus}`} />
-					<span className={`status-text ${connectionStatus}`}>
-						{connectionStatus.toUpperCase()}
-					</span>
-				</div>
+  return (
+    <div id="#topbar" className="topbar w-full ">
+      <div className="topbar-left sm:gap-0 ">
+        <div className="tamsen">
+          <img src={LOGO} alt="LOGO" />
+        </div>
+        <span className="topbar-title">Live Alerts</span>
+      </div>
 
-				<span className="topbar-badge">
-					{alerts.length === 0 ? (
-						`NO ACTIVE ALERTS    `
-					) : (
-						<span className="">{alerts.length} ACTIVE</span>
-					)}
-				</span>
+      <div className="topbar-right">
+        <div className="status-bar">
+          <div className={`status-dot ${connectionStatus}`} />
+          <span className={`status-text ${connectionStatus}`}>{connectionStatus.toUpperCase()}</span>
+        </div>
 
-				{locationName && <span className="location-badge">{locationName}</span>}
+        <span className="topbar-badge">
+          {alerts.length === 0 ? `NO ACTIVE ALERTS    ` : <span className="">{alerts.length} ACTIVE</span>}
+        </span>
+        <div>{isDemoMode && <span className="location-badge">Demo Mode</span>}</div>
+        {(locationName && !isDemoMode ) && <span className="location-badge">{locationName}</span>}
 
-				<div onClick={handleNavigate} className={isDashboard === "/" ? "reports-badge" : "nav-back"}>
-					{isDashboard === "/" ? (
-						<>
-							<ChartPie size={18} />
-							Dashboard
-						</>
-					) : (
-						<>
-							<ChevronLeft size={15} />
-							<span className="relative right-1.5">Back</span>
-						</>
-					)}
-				</div>
+        <div onClick={handleNavigate} className={isDashboard === "/" ? "reports-badge" : "nav-back"}>
+          {isDashboard === "/" ? (
+            <>
+              <ChartPie size={18} />
+              Dashboard
+            </>
+          ) : (
+            <>
+              <ChevronLeft size={15} />
+              <span className="relative right-1.5">Back</span>
+            </>
+          )}
+        </div>
 
-				<FullscreenToggle />
-				<ThemeToggle />
-			</div>
-		</div>
-	);
+        <FullscreenToggle />
+        <ThemeToggle />
+      </div>
+    </div>
+  );
 };
 
 export default NavBar;
