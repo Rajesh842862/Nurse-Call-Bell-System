@@ -1,8 +1,10 @@
-import { BedDouble, DoorOpen, MapPin } from "lucide-react";
-import type { CSSProperties } from "react";
+import { Bath, BedDouble, DoorOpen, MapPin } from "lucide-react";
+import { useState, type CSSProperties } from "react";
 import NavBar from "../components/NavBar";
 import useAlert from "../context/useAlert";
 import "../style/demopage.css";
+
+import axios from "axios";
 
 const devices = [
   {
@@ -16,7 +18,7 @@ const devices = [
     callType: "calling",
     attended: 0,
     emp_no: "EMP001",
-    name: "Rajesh Kumar",
+    name: "Rajesh",
     designation: "Staff Nurse",
     status: "active",
   },
@@ -78,9 +80,12 @@ const devices = [
     emp_no: "EMP005",
     name: "Senthil",
     designation: "Staff Nurse",
-    status: "inactive",
+    // status: "inactive",
+    status: "active",
   },
 ];
+
+const STORAGE_KEY = "demo-devices";
 
 type ButtonStyle = CSSProperties & {
   "--from": string;
@@ -92,13 +97,53 @@ type ButtonStyle = CSSProperties & {
 const buttons = [
   { id: "calling", label: "CALL", from: "#43a047", to: "#1b5e20", glow: "rgba(46,125,50,0.5)", text: "#fff" },
   { id: "emergency", label: "EMERGENCY", from: "#e53935", to: "#8e0000", glow: "rgba(198,40,40,0.5)", text: "#fff" },
-  { id: "code", label: "CODE BLUE", from: "#42a5f5", to: "#0d47a1", glow: "rgba(21,101,192,0.5)", text: "#fff" },
+  { id: "code blue", label: "CODE BLUE", from: "#42a5f5", to: "#0d47a1", glow: "rgba(21,101,192,0.5)", text: "#fff" },
   { id: "acknowledged", label: "ACK", from: "#9d4edd", to: "#5a189a", glow: "rgba(124,58,237,0.5)", text: "#fff" },
   { id: "cancel", label: "CANCEL", from: "#fb923c", to: "#c2410c", glow: "rgba(251,146,60,0.55)", text: "#ffffff" },
 ];
 
 const DemoMode = () => {
   const { isUnlocked, enableAudio } = useAlert();
+  const [loadingId, setLoadingId] = useState<number | null>(null);
+
+  // =========================================
+  // Create Demo Alert
+  // =========================================
+  const handleButtonClick = async (device: (typeof devices)[number], callType: string) => {
+    try {
+      // Prevent multiple clicks
+      setLoadingId(device.id);
+
+      const payload = {
+        room: device.room,
+        floor: device.floor,
+        tower: device.tower,
+        location: device.location,
+        device_type: device.device_type,
+        uid: device.uid,
+        callType,
+        attended: device.attended,
+        emp_no: device.emp_no,
+        name: device.name,
+        designation: device.designation,
+
+        // Static for demo
+        placeType: "Patient Room",
+      };
+
+      const { data } = await axios.post(`${import.meta.env.VITE_SERVER_APP_URL}/api/demo`, payload);
+
+      console.log(data.message);
+
+      // Later toast.success(data.message)
+    } catch (error) {
+      console.error("Demo Alert Error", error);
+
+      // Later toast.error(...)
+    } finally {
+      setLoadingId(null);
+    }
+  };
 
   if (!isUnlocked) {
     return (
@@ -150,7 +195,7 @@ const DemoMode = () => {
                   <p className="panel-device">{device.device_type}</p>
                 </div>
 
-                <span className={`panel-status ${device.status} `}>{ device.status}</span>
+                <span className={`panel-status ${device.status} `}>{device.status}</span>
               </div>
               {/* -------------------------------- Panel Header ------------------------------- */}
               <div className="panel-display rounded-xl p-8">
@@ -166,7 +211,9 @@ const DemoMode = () => {
                     return (
                       <button
                         key={btn.id}
-                        className="panel-btn relative  w-23 h-23 sm:w-28 sm:h-28  lg:w-30 lg:h-30 rounded-full overflow-hidden select-none"
+                        disabled={loadingId === device.id}
+                        onClick={() => handleButtonClick(device, btn.id)}
+                        className="panel-btn relative  w-23 h-23 sm:w-28 sm:h-28  lg:w-30 lg:h-30 rounded-full overflow-hidden select-none disabled:opacity-60 disabled:cursor-not-allowed"
                         style={style}
                       >
                         {/* Top glossy reflection */}
@@ -241,11 +288,14 @@ const DemoMode = () => {
 
                 {/* Device */}
                 <div className="device-card">
-                  <BedDouble size={22} className="device-icon bed" />
+                  {device.device_type === "Toilet Module" ? (
+                    <Bath size={22} className="device-icon toilet" />
+                  ) : (
+                    <BedDouble size={22} className="device-icon bed" />
+                  )}
 
                   <div>
                     <p className="device-title">Device</p>
-
                     <p className="device-value">{device.device_type}</p>
                   </div>
                 </div>

@@ -400,6 +400,10 @@
   color:#7c3aed;
 }
 
+.device-icon.toilet {
+  color: #f1a500;
+}
+
 .device-title{
 
   font-size:.78rem;
