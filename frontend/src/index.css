@@ -336,7 +336,11 @@ html::-webkit-scrollbar-thumb:hover {
   white-space: nowrap;
 }
 
-.tamsen {
+/* [data-theme="dark"] .topbar-title{
+  color: #00c5e6;
+} */
+
+.curovoxplusLogo {
   width: clamp(9rem, 10vw, 18rem);
 }
 

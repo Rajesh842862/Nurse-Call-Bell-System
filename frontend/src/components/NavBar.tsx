@@ -1,7 +1,8 @@
 import { ChartPie, ChevronLeft } from "lucide-react";
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import LOGO from "../assets/TamsenLogo.png";
+import LOGO from "../assets/logo/CurovoxPlusLogo.png";
+import TamsenLogo from "../assets/logo/TamsenLogo.png";
 import useAlert from "../context/useAlert";
 import useDemoShortcut from "../hooks/useDemoShortcut";
 import FullscreenToggle from "./FullscreenToggle";
@@ -39,7 +40,7 @@ const NavBar = () => {
   return (
     <div id="#topbar" className="topbar w-full ">
       <div className="topbar-left sm:gap-0 ">
-        <div className="tamsen">
+        <div className="curovoxplusLogo">
           <img src={LOGO} alt="LOGO" />
         </div>
         <span className="topbar-title">Live Alerts</span>
@@ -73,6 +74,10 @@ const NavBar = () => {
 
         <FullscreenToggle />
         <ThemeToggle />
+      </div>
+      {/* Bottom Right Tamsen Logo */}
+      <div className="fixed bottom-5 right-7  z-50 pointer-events-none">
+        <img src={TamsenLogo} alt="Tamsen" className="h-[clamp(1rem,4vw,2rem)] w-auto object-contain " />
       </div>
     </div>
   );

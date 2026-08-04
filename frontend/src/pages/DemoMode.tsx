@@ -1,11 +1,12 @@
+import axios from "axios";
 import { Bath, BedDouble, DoorOpen, MapPin } from "lucide-react";
 import { useState, type CSSProperties } from "react";
+import { toast, Toaster } from "sonner";
+import LOGO from "../assets/logo/CurovoxPlusLogo.png";
 import NavBar from "../components/NavBar";
+import useTheme from "../context/Theme/useTheme";
 import useAlert from "../context/useAlert";
 import "../style/demopage.css";
-
-import axios from "axios";
-
 const devices = [
   {
     id: 1,
@@ -106,6 +107,8 @@ const DemoMode = () => {
   const { isUnlocked, enableAudio } = useAlert();
   const [loadingId, setLoadingId] = useState<number | null>(null);
 
+  const { theme } = useTheme();
+
   // =========================================
   // Create Demo Alert
   // =========================================
@@ -130,11 +133,14 @@ const DemoMode = () => {
         // Static for demo
         placeType: "Patient Room",
       };
+      
+      toast.promise(axios.post(`${import.meta.env.VITE_SERVER_APP_URL}/api/demo`, payload), {
+        loading: "Sending demo alert...",
 
-      const { data } = await axios.post(`${import.meta.env.VITE_SERVER_APP_URL}/api/demo`, payload);
-
-      console.log(data.message);
-
+        success: () => `${device.room.replace(/^[A-Za-z]0*/, "")} ${device.device_type} ${callType.toLocaleUpperCase()}. `,
+        error: "Failed to send demo alert",
+      });
+   
       // Later toast.success(data.message)
     } catch (error) {
       console.error("Demo Alert Error", error);
@@ -194,9 +200,14 @@ const DemoMode = () => {
 
                   <p className="panel-device">{device.device_type}</p>
                 </div>
-
+                {/*  Logo */}
+                <div>
+                  <img src={LOGO} alt="CUROVOX+" className="h-[clamp(1.75rem,3vw,3rem)] w-auto  object-contain" />
+                </div>
+                {/*  Logo */}
                 <span className={`panel-status ${device.status} `}>{device.status}</span>
               </div>
+
               {/* -------------------------------- Panel Header ------------------------------- */}
               <div className="panel-display rounded-xl p-8">
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6    md:gap-8     place-items-center   ">
@@ -261,6 +272,33 @@ const DemoMode = () => {
                   </div>
                 </div>
               </div>
+              {/* -------------------------------- StatusIndicators  ------------------------------- */}
+              <div className="device-status-legend">
+                <div className="device-status-item">
+                  <span className="status-dots wifi"></span>
+                  <span className="status-label">WIFI CONNECTED</span>
+                </div>
+
+                <div className="device-status-item">
+                  <span className="status-dots no-wifi"></span>
+                  <span className="status-label">NO WIFI</span>
+                </div>
+
+                <div className="device-status-item">
+                  <span className="status-dots ap-mode"></span>
+                  <span className="status-label">AP MODE</span>
+                </div>
+                <div className="device-status-item">
+                  <span className="status-dots accessed"></span>
+                  <span className="status-label">CARD ACCESSED</span>
+                </div>
+
+                <div className="device-status-item">
+                  <span className="status-dots sync"></span>
+                  <span className="status-label">DATA SYNC</span>
+                </div>
+              </div>
+              {/* -------------------------------- StatusIndicators  ------------------------------- */}
               {/* RFID */}
               {/* Device Details */}
               <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -305,6 +343,7 @@ const DemoMode = () => {
           </div>
         ))}
       </div>
+      <Toaster theme={theme} richColors position="top-right" />
     </div>
   );
 };
