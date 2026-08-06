@@ -3,9 +3,11 @@ import { Bath, BedDouble, DoorOpen, MapPin } from "lucide-react";
 import { useState, type CSSProperties } from "react";
 import { toast, Toaster } from "sonner";
 import LOGO from "../assets/logo/CurovoxPlusLogo.png";
+import DarkLogo from "../assets/logo/DarkModeCurovoxPlusLogo.png"
 import NavBar from "../components/NavBar";
 import useTheme from "../context/Theme/useTheme";
 import useAlert from "../context/useAlert";
+import TamsenLogo from "../assets/logo/TamsenLogo.png";
 import "../style/demopage.css";
 const devices = [
   {
@@ -86,7 +88,6 @@ const devices = [
   },
 ];
 
-const STORAGE_KEY = "demo-devices";
 
 type ButtonStyle = CSSProperties & {
   "--from": string;
@@ -201,11 +202,15 @@ const DemoMode = () => {
                   <p className="panel-device">{device.device_type}</p>
                 </div>
                 {/*  Logo */}
-                <div>
-                  <img src={LOGO} alt="CUROVOX+" className="h-[clamp(1.75rem,3vw,3rem)] w-auto  object-contain" />
+                <div className="text-center">
+                  <img src={`${theme==="light"?LOGO:DarkLogo}`} alt="CUROVOX+" className="h-[clamp(1.75rem,3vw,3rem)] rounded-sm w-auto  object-contain" />
+                  <p className="panel-product-tag text-[#02C0DF] ">Wireless Nurse Call Bell</p>
                 </div>
                 {/*  Logo */}
+                <div className="flex flex-row sm:flex-col gap-2 justify-center sm:justify-start items-center sm:items-start">
+                   <img src={TamsenLogo} alt="Tamsen" className="h-[clamp(1.70rem,4vw,2rem)]  pe-5 sm:pe-0 mt-2 sm:mt-0  w-auto object-contain " />
                 <span className={`panel-status ${device.status} `}>{device.status}</span>
+                </div>
               </div>
 
               {/* -------------------------------- Panel Header ------------------------------- */}

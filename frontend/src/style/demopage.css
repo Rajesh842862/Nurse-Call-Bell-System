@@ -499,6 +499,31 @@
 
 }
 
+.panel-product-tag{
+
+  margin-top:8px;
+
+  font-size:0.70rem;
+
+  font-weight:600;
+
+  font-family: "Poppins", sans-serif;
+  
+  text-transform:uppercase;
+
+  letter-spacing:.18em;
+
+  white-space:nowrap;
+
+  color: #02C0DF;
+
+    /* Text rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+
+}
+
 .panel-status{
 
   display:inline-flex;

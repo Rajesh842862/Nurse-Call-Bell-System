@@ -2,16 +2,20 @@ import { ChartPie, ChevronLeft } from "lucide-react";
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import LOGO from "../assets/logo/CurovoxPlusLogo.png";
+import DarkLogo from "../assets/logo/DarkModeCurovoxPlusLogo.png"
 import TamsenLogo from "../assets/logo/TamsenLogo.png";
 import useAlert from "../context/useAlert";
 import useDemoShortcut from "../hooks/useDemoShortcut";
 import FullscreenToggle from "./FullscreenToggle";
 import ThemeToggle from "./ThemeToggle";
+import useTheme from "../context/Theme/useTheme";
 
 const NavBar = () => {
   const navigate = useNavigate();
 
   const { isDemoMode } = useDemoShortcut();
+
+    const { theme } = useTheme();
 
   const { connectionStatus, alerts } = useAlert();
 
@@ -41,7 +45,7 @@ const NavBar = () => {
     <div id="#topbar" className="topbar w-full ">
       <div className="topbar-left sm:gap-0 ">
         <div className="curovoxplusLogo">
-          <img src={LOGO} alt="LOGO" />
+          <img src={`${theme==="light"?LOGO:DarkLogo}`} className="rounded-sm" alt="LOGO" />
         </div>
         <span className="topbar-title">Live Alerts</span>
       </div>
