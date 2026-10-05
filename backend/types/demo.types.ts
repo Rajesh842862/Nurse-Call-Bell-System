@@ -3,11 +3,13 @@ export interface DemoRequest {
   floor: string;
   callType: string;
   device_type: string;
-  uid: string;
+  card_number: string;
   location: string;
   tower: string;
   placeType: string;
-  attended: number;
+  attended: string;
+  date: string;
+  time: string;
   emp_no: string;
   name: string;
   designation: string;

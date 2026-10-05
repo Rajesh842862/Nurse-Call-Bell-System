@@ -64,7 +64,7 @@ const Form = () => {
 
 			setExcelData(res.data);
 
-			const result = res.data.data.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+			const result = res.data.data.sort((a, b) => `${b.date}T${b.time}`.localeCompare(`${a.date}T${a.time}`) || b.sno - a.sno);
 
 			setReportData(result);
 		} catch (err) {

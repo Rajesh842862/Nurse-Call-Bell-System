@@ -13,11 +13,12 @@
   /* ── Core ── */
   --bg: #0a0a0a;
   --card: #111;
+  --cardconfimBox: #111;
   --text: #fff;
 
   /* ── Accent ── */
-  --accent: #ff4444;
-  --accent-bg: #ff444418;
+  --accent: #17cfef;
+  --accent-bg: #17cfef18;
   --border: #2a2a2a;
 
   /* ── Badge ── */
@@ -65,6 +66,7 @@
   --count-info: #3b82ff;
   --count-warning: #f7750a;
   --count-purple: #a852ff;
+  --count-reset: #22d3ee;
   --count-bed: #fa15b5;
   --count-toilet: #14b8a6;
 
@@ -110,6 +112,7 @@
   /* ── Core ── */
   --bg: white;
   --card: rgba(255, 255, 255, 0.72);
+  --cardconfimBox: rgb(255, 255, 255);
   --text: #0a0f1e;
 
   /* ── Accent ── */
@@ -162,6 +165,7 @@
   --count-info: #0055d4;
   --count-warning: #ff9800;
   --count-purple: #6f42c1;
+  --count-reset: #087990;
   --count-toilet: #84cc16;
   --count-bed: #ec4899;
 
@@ -171,7 +175,9 @@
   --pastel-info: #dbeafe;
   --pastel-warning: #ffedd5;
   --pastel-purple: #f3e8ff;
+  --pastel-reset: #cffafe;
   --pastel-bed: #fbccf28b;
+  --pastel-blue: #cffafe;
 
   /* ── Disconnected Screen ── */
   --disc-primary: #dc3545;
@@ -280,6 +286,48 @@ html::-webkit-scrollbar-thumb:hover {
   animation: macFormEnter 0.4s ease;
 }
 
+/* card spot light effects added -Rajesh */
+
+@media (hover: hover) and (pointer: fine) {
+  [data-theme="dark"] .today-count-card {
+    --spotlight-x: 40%;
+    --spotlight-y: 40%;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    transition: transform 220ms ease;
+  }
+
+  [data-theme="dark"] .today-count-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0;
+    background: radial-gradient(
+      130px circle at var(--spotlight-x) var(--spotlight-y),
+      rgba(255, 255, 255, 0.15),
+      rgba(77, 208, 255, 0.05) 44%,
+      transparent 72%
+    );
+    transition: opacity 220ms ease;
+  }
+
+  [data-theme="dark"] .today-count-card > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  [data-theme="dark"] .today-count-card:hover {
+    transform: translateY(-3px);
+  }
+
+  [data-theme="dark"] .today-count-card:hover::before {
+    opacity: 1;
+  }
+}
+
 @keyframes macFormEnter {
   from {
     opacity: 0;
@@ -330,10 +378,13 @@ html::-webkit-scrollbar-thumb:hover {
 
 .topbar-title {
   font-family: "Bebas Neue", sans-serif;
-  font-size: clamp(1rem, 3vw, 1.25rem);
-  letter-spacing: 0.15em;
+  font-size: clamp(0.75rem, 0.9vw, 1.05rem);
+  letter-spacing: 0.12em;
+  margin-top: 3px;
   color: var(--accent);
   white-space: nowrap;
+  position: relative;
+  left: 20px;
 }
 
 /* [data-theme="dark"] .topbar-title{
@@ -341,7 +392,7 @@ html::-webkit-scrollbar-thumb:hover {
 } */
 
 .curovoxplusLogo {
-  width: clamp(9rem, 10vw, 18rem);
+  width: clamp(9rem, 13vw, 18rem);
 }
 
 .topbar-right {
@@ -351,7 +402,7 @@ html::-webkit-scrollbar-thumb:hover {
 }
 
 /* ── Top Bar — Mobile ── */
-@media (max-width: 848px) {
+@media (max-width: 885px) {
   .topbar {
     flex-direction: column;
     align-items: center;
@@ -373,15 +424,15 @@ html::-webkit-scrollbar-thumb:hover {
 
   /* Stacking order */
   .status-bar {
-    order: 1;
+    order: 0;
     justify-content: flex-start;
   }
   .topbar-badge {
-    order: 2;
+    order: 1;
     justify-self: flex-end;
   }
   .location-badge {
-    order: 3;
+    order: 2;
     justify-self: flex-start;
     max-width: 120px;
     overflow: hidden;
@@ -391,7 +442,7 @@ html::-webkit-scrollbar-thumb:hover {
     order: 4;
   }
   .fullscreen-btn {
-    order: 4;
+    order: 3;
   }
   .reports-badge,
   .nav-back {
@@ -469,7 +520,8 @@ html::-webkit-scrollbar-thumb:hover {
 .location-badge,
 .reports-badge,
 .nav-back,
-.fullscreen-btn {
+.fullscreen-btn,
+.reset-alerts-btn {
   font-size: var(--font-ReSize);
   padding: 6px 10px;
   border-radius: 2px;
@@ -496,9 +548,16 @@ html::-webkit-scrollbar-thumb:hover {
 
 /* ── Shared interactive-button base ── */
 .reports-badge,
-.nav-back,
-.fullscreen-btn {
+.nav-back {
   padding: 5px 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 0.2s;
+}
+.fullscreen-btn {
+  padding: 6px 10px;
   cursor: pointer;
   display: flex;
   justify-content: center;
@@ -533,6 +592,41 @@ html::-webkit-scrollbar-thumb:hover {
   background: var(--back-text);
   color: #fff;
   box-shadow: 0 0 10px var(--back-text);
+}
+
+/* ── Reset Alerts button ── */
+.reset-alerts-btn {
+  padding: 5px 10px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  transition: 0.2s;
+  font-family: "Poppins", sans-serif;
+  font-size: var(--font-ReSize);
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+  text-transform: uppercase;
+  background: rgba(255, 152, 0, 0.1);
+  color: #ff9800;
+  border: 1px solid rgba(255, 152, 0, 0.4);
+}
+.reset-alerts-btn:hover {
+  background: #ff9800;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(255, 152, 0, 0.5);
+}
+
+[data-theme="light"] .reset-alerts-btn {
+  background: rgba(230, 126, 0, 0.08);
+  color: #d68000;
+  border-color: rgba(230, 126, 0, 0.35);
+}
+[data-theme="light"] .reset-alerts-btn:hover {
+  background: #d68000;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(214, 128, 0, 0.4);
 }
 
 /* ── Fullscreen toggle ── */
@@ -1010,6 +1104,190 @@ html::-webkit-scrollbar-thumb:hover {
 }
 
 /* ============================================================
+   RESET CONFIRM MODAL
+   ============================================================ */
+.reset-modal-dialog {
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.reset-modal-dialog::backdrop {
+  display: none;
+}
+
+.reset-modal-dialog[open] {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.196);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  animation: modalOverlayIn 0.2s ease forwards;
+}
+
+[data-theme="light"] .reset-modal-dialog[open] {
+  background: rgba(0, 0, 0, 0.648);
+}
+
+@keyframes modalOverlayIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalContentIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.reset-modal-content {
+  background: var(--cardconfimBox);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 24px 28px 20px;
+  width: min(400px, 90vw);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    0 2px 8px rgba(0, 0, 0, 0.2);
+  animation: modalContentIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.reset-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.reset-modal-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--form-danger-bg);
+  color: var(--form-danger);
+  flex-shrink: 0;
+}
+
+.reset-modal-title {
+  font-family: "Poppins", sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+  flex: 1;
+}
+
+.reset-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  opacity: 0.5;
+  cursor: pointer;
+  transition:
+    opacity 0.15s,
+    background 0.15s;
+}
+
+.reset-modal-close:hover {
+  opacity: 1;
+  background: var(--form-danger-bg);
+  color: var(--form-danger);
+}
+
+.reset-modal-message {
+  font-family: "Poppins", sans-serif;
+  font-size: 0.875rem;
+  color: var(--text);
+  opacity: 0.7;
+  margin: 0 0 22px;
+  line-height: 1.5;
+}
+
+.reset-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.reset-modal-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: "Poppins", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  padding: 8px 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+.reset-modal-btn-cancel {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  opacity: 0.8;
+}
+
+.reset-modal-btn-cancel:hover {
+  opacity: 1;
+  border-color: var(--text);
+}
+
+.reset-modal-btn-confirm {
+  background: var(--form-danger);
+  color: #fff;
+  border: 1px solid var(--form-danger);
+}
+
+.reset-modal-btn-confirm:hover {
+  box-shadow: 0 0 12px var(--form-danger);
+}
+
+/* ── Light theme overrides ── */
+[data-theme="light"] .reset-modal-btn-cancel:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+[data-theme="light"] .reset-modal-btn-confirm:hover {
+  box-shadow: 0 0 12px rgba(192, 57, 43, 0.4);
+}
+
+/* ============================================================
    LOADER
    ============================================================ */
 .loader {
@@ -1291,4 +1569,12 @@ html::-webkit-scrollbar-thumb:hover {
 /* ── Light theme table text ── */
 [data-theme="light"] .table-report {
   color: #1a1f2e;
+}
+
+/* ── Report table virtual rows: keep cells single-line so fixed row
+   height never overflows and overlaps subsequent virtual rows ── */
+.table-report .group > div {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

@@ -6,15 +6,21 @@ import { pool } from "./config/db";
 import weeklyReportRoutes from "./routes/weeklyReportRoute";
 import reportRoutes from "./routes/reportRoute";
 import demoRoutes from "./routes/demoRoute";
-import generate from "./service/ttsService";
-import { ActiveAlert, AlertData, ServerErrorPayload } from "./types";
+import generate, { generateAudioFilename } from "./service/ttsService";
+import { publicDir } from "./config/paths";
+import { ActiveAlert, AlertData, NcbEspRow, ServerErrorPayload } from "./types";
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  })
+);
 
 app.use(express.json());
-app.use(express.static("public"));
+app.use(express.static(publicDir));
 
 app.get("/", (_req, res) => {
 	res.status(200).json({
@@ -25,6 +31,58 @@ app.get("/", (_req, res) => {
 app.use("/api/report", reportRoutes);
 app.use("/api", weeklyReportRoutes);
 app.use("/api/demo", demoRoutes);
+
+app.post("/api/reset-alerts", async (_req, res) => {
+	try {
+		const alertsToReset = [...activeAlerts];
+
+		if (alertsToReset.length === 0) {
+			res.json({ success: true, resetCount: 0 });
+			return;
+		}
+
+		for (const alert of alertsToReset) {
+			await pool.execute(
+				`INSERT INTO ncb_esp
+				 (room, floor, callType, device_type, card_number, location, tower, placeType, attended, date, time, emp_no, name, designation)
+				 VALUES (?, ?, 'reset', ?, ?, ?, ?, ?, ?, CURDATE(), CURTIME(), ?, ?, ?)`,
+				[
+					alert.room,
+					alert.floor,
+					alert.device_type,
+					alert.card_number,
+					alert.location,
+					alert.tower,
+					alert.placeType,
+					alert.attended,
+					alert.emp_no,
+					alert.name,
+					alert.designation,
+				]
+			);
+		}
+
+		const [maxRow] = await pool.query("SELECT sno FROM ncb_esp ORDER BY sno DESC LIMIT 1");
+		const typed = maxRow as { sno: number }[];
+
+		if (typed.length > 0) {
+			lastSno = typed[0].sno;
+		}
+
+		activeAlerts = [];
+
+		io.emit("reset-alerts");
+
+		console.log(`Reset ${alertsToReset.length} alert(s)`);
+
+		res.json({ success: true, resetCount: alertsToReset.length });
+	} catch (error) {
+		const err = error as Error;
+		console.error("Reset Alerts Error:", err.message);
+
+		res.status(500).json({ success: false, message: "Failed to reset alerts" });
+	}
+});
 
 const server = http.createServer(app);
 
@@ -45,21 +103,21 @@ const sendErrorToFrontend = (message: ServerErrorPayload): void => {
 	});
 };
 
-let lastId = 0;
+let lastSno = 0;
 let isChecking = false;
 let pollingStarted = false;
 
 const initializeLastId = async (): Promise<void> => {
 	try {
-		const [rows] = await pool.query("SELECT id FROM ncb_esp ORDER BY id DESC LIMIT 1");
+		const [rows] = await pool.query("SELECT sno FROM ncb_esp ORDER BY sno DESC LIMIT 1");
 
-		const typedRows = rows as { id: number }[];
+		const typedRows = rows as { sno: number }[];
 
 		if (typedRows.length > 0) {
-			lastId = typedRows[0].id;
+			lastSno = typedRows[0].sno;
 		}
 
-		console.log("Starting lastId:", lastId);
+		console.log("Starting lastSno:", lastSno);
 
 		if (!pollingStarted) {
 			pollingStarted = true;
@@ -68,6 +126,12 @@ const initializeLastId = async (): Promise<void> => {
 		}
 	} catch (err) {
 		console.error("Initialization Error:", "Database Connection failed");
+
+		sendErrorToFrontend({
+			type: "DB_CONNECTION_ERROR",
+			message: "Database connection failed. Retrying...",
+			error: (err as Error).message,
+		});
 
 		setTimeout(initializeLastId, 500);
 	}
@@ -80,14 +144,14 @@ const checkNewEntry = async (): Promise<void> => {
 	isChecking = true;
 
 	try {
-		const [rows] = await pool.query("SELECT * FROM ncb_esp WHERE id > ? ORDER BY id ASC", [lastId]);
+		const [rows] = await pool.query("SELECT * FROM ncb_esp WHERE sno > ? ORDER BY sno ASC", [lastSno]);
 
-		const typedRows = rows as any[];
+		const typedRows = rows as NcbEspRow[];
 
 		for (const row of typedRows) {
 			const callType = row.callType?.toLowerCase();
 
-			if (callType !== "cancel" && callType !== "acknowledged") {
+			if (callType !== "cancel" && callType !== "acknowledged" && callType !== "reset") {
 				try {
 					await generate(row.room, row.callType, row.device_type);
 				} catch (error) {
@@ -111,10 +175,10 @@ const checkNewEntry = async (): Promise<void> => {
 
 			const alertData: AlertData = {
 				...row,
-				audio: `/audio/${row.room}_${row.device_type.toLowerCase()}_${row.callType.toLowerCase()}.mp3`,
+				audio: `/audio/${generateAudioFilename(row.room, row.device_type, row.callType)}`,
 			};
 
-			if (callType === "cancel" || callType === "acknowledged") {
+			if (callType === "cancel" || callType === "acknowledged" || callType === "reset") {
 				activeAlerts = activeAlerts.filter(
 					(a) =>
 						!(
@@ -135,7 +199,7 @@ const checkNewEntry = async (): Promise<void> => {
 
 			io.emit("new-alert", alertData);
 
-			lastId = row.id;
+			lastSno = row.sno;
 		}
 	} catch (error) {
 		const err = error as Error;
@@ -172,7 +236,7 @@ io.on("connection", (socket) => {
 			return a.room.localeCompare(b.room);
 		}
 
-		return b.id - a.id;
+		return b.sno - a.sno;
 	});
 
 	socket.emit("existing-alerts", sortedAlerts);

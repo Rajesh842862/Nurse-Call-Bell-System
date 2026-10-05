@@ -1,14 +1,21 @@
 import type { Socket } from "socket.io-client";
 export interface Alert {
-	id: number;
+	sno: number;
 	room: string;
+	floor: string;
 	device_type: string;
 	callType: string;
+	card_number: string;
 	location: string;
-	timestamp: string;
-	emp_no?: string;
-	name?: string;
-	designation?: string;
+	tower: string;
+	placeType: string;
+	attended: string;
+	date: string;
+	time: string;
+	time_of_DB: string;
+	emp_no: string;
+	name: string;
+	designation: string;
 	audio: string;
 	order?: number;
 }
@@ -40,20 +47,30 @@ export interface ReportCounts {
 	code_blue_count: number;
 	cancel_count: number;
 	acknowledged_count: number;
+	reset_count: number;
 	bed_count: number;
 	toilet_count: number;
 }
 
 export interface ProcessedReport {
-	id: number;
+	sno: number;
 	room: string;
+	floor: string;
 	device_type: string;
 	callType: string;
+	card_number: string;
 	location: string;
-	timestamp: string;
-	emp_no?: string;
-	name?: string;
-	designation?: string;
+	tower: string;
+	placeType: string;
+	attended: string;
+	date: string;
+	time: string;
+	time_of_DB: string;
+	emp_no: string;
+	name: string;
+	designation: string;
+	startTime: string;
+	callRaised: string;
 	emergency: string;
 	emergencyTime: string;
 	codeBlue: string;
@@ -99,6 +116,7 @@ export interface AlertContextValue {
 	alertCounter: React.RefObject<number>;
 	alertsRef: React.RefObject<Alert[]>;
 	enableAudio: () => void;
+	resetAlerts: () => Promise<void>;
 	from: string;
 	setFrom: React.Dispatch<React.SetStateAction<string>>;
 	to: string;

@@ -1,6 +1,27 @@
 import { EdgeTTS } from "node-edge-tts";
 import path from "path";
 import fs from "fs/promises";
+import { audioDir } from "../config/paths";
+
+const sanitizeFilenameSegment = (value: string): string => {
+	return value
+		.replace(/[\\/]/g, "_")
+		.replace(/\.\./g, "")
+		.replace(/\s+/g, " ")
+		.trim();
+};
+
+export function generateAudioFilename<T extends { toString: () => string }>(
+	roomNumber: T,
+	device_type: T,
+	call_type: T
+): string {
+	const room = sanitizeFilenameSegment(roomNumber.toString());
+	const device = sanitizeFilenameSegment(device_type.toString());
+	const call = sanitizeFilenameSegment(call_type.toString());
+
+	return `${room}_${device}_${call}.mp3`;
+}
 
 async function generate(roomNumber: string, call_type: string, device_type: string): Promise<string> {
 	try {
@@ -16,17 +37,26 @@ async function generate(roomNumber: string, call_type: string, device_type: stri
 			throw new Error("Device type is Missing!");
 		}
 
-		const filePath = path.join(__dirname, "..", "public", "audio", `${roomNumber}_${device_type}_${call_type}.mp3`);
+		const filename = generateAudioFilename(roomNumber, device_type, call_type);
+		const filePath = path.join(audioDir, filename);
 
-		const audioDir = path.join(__dirname, "..", "public", "audio");
 		await fs.mkdir(audioDir, { recursive: true });
 
-		try {
-			await fs.access(filePath);
-			console.log(`File already exists. Skipping TTS for ${roomNumber} ${call_type}`);
-			return filePath;
-		} catch (_) {
-			// File doesn't exist, proceed with generation
+		const fileExists = await fs
+			.access(filePath)
+			.then(() => true)
+			.catch(() => false);
+
+		if (fileExists) {
+			const stat = await fs.stat(filePath);
+
+			if (stat.size > 0) {
+				console.log(`File already exists. Skipping TTS for ${roomNumber} ${call_type}`);
+				return filePath;
+			}
+
+			console.warn(`Existing audio file is empty (0 bytes). Regenerating for ${roomNumber} ${call_type}`);
+			await fs.rm(filePath, { force: true });
 		}
 
 		const tts = new EdgeTTS({
@@ -34,7 +64,7 @@ async function generate(roomNumber: string, call_type: string, device_type: stri
 			outputFormat: "audio-24khz-96kbitrate-mono-mp3",
 			pitch: "+2%",
 			rate: "-10%",
-			volume: "0%",
+			volume: "100%",
 			timeout: 20000,
 		});
 
@@ -48,7 +78,13 @@ async function generate(roomNumber: string, call_type: string, device_type: stri
 			await tts.ttsPromise(`${digits} ${device_type} ${call_type}`, filePath);
 		}
 
-		console.log(`MP3 Generated Successfully ${roomNumber}`);
+		const stat = await fs.stat(filePath);
+
+		if (stat.size === 0) {
+			throw new Error(`TTS produced an empty MP3 for ${roomNumber} ${call_type}`);
+		}
+
+		console.log(`MP3 Generated Successfully ${roomNumber} -> ${filename} (${stat.size} bytes)`);
 
 		return filePath;
 	} catch (error) {

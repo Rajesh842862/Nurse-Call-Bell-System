@@ -11,24 +11,24 @@ const getWeeklyReports = async (req: Request, res: Response): Promise<void> => {
 		last7Days.setDate(today.getDate() - 6);
 
 		const formatDate = (date: Date): string => {
-			return new Date(date).toISOString().split("T")[0];
+			const year = date.getFullYear();
+			const month = String(date.getMonth() + 1).padStart(2, "0");
+			const day = String(date.getDate()).padStart(2, "0");
+
+			return `${year}-${month}-${day}`;
 		};
 
 		const fromDate = formatDate(last7Days);
 		const toDate = formatDate(today);
 
-		const from = `${fromDate} 00:00:00`;
-		const to = `${toDate} 23:59:59`;
-
 		const query = `
       SELECT *
       FROM ncb_esp
-      WHERE timestamp >= ?
-        AND timestamp <= ?
-      ORDER BY timestamp ASC
+      WHERE date BETWEEN ? AND ?
+      ORDER BY date ASC, time ASC, sno ASC
     `;
 
-		const [reports] = await pool.query(query, [from, to]);
+		const [reports] = await pool.query(query, [fromDate, toDate]);
 
 		const processedReports = reportGenerate(reports as any);
 
@@ -43,6 +43,7 @@ const getWeeklyReports = async (req: Request, res: Response): Promise<void> => {
 			code_blue_count: 0,
 			cancel_count: 0,
 			acknowledged_count: 0,
+			reset_count: 0,
 			bed_count: 0,
 			toilet_count: 0,
 		};
@@ -51,7 +52,7 @@ const getWeeklyReports = async (req: Request, res: Response): Promise<void> => {
 		const isToilet = ["toilet", "rest room", "restroom", "wash room", "washroom", "bath room", "bathroom", "rest"];
 
 		for (let item of processedReports) {
-			const date = formatDate(new Date(item.timestamp));
+			const date = item.date;
 
 			if (!dailyCalls[date]) {
 				dailyCalls[date] = {
@@ -109,6 +110,8 @@ const getWeeklyReports = async (req: Request, res: Response): Promise<void> => {
 					todayCounts.cancel_count++;
 				} else if (status === "acknowledged") {
 					todayCounts.acknowledged_count++;
+				} else if (status === "reset") {
+					todayCounts.reset_count++;
 				}
 			}
 		}
@@ -140,13 +143,6 @@ const getWeeklyReports = async (req: Request, res: Response): Promise<void> => {
 		res.status(500).json({
 			message: "Weeekly Reports DataBase connection Failed",
 		});
-
-		const error = err as NodeJS.ErrnoException;
-		if (error.code === "ECONNREFUSED") {
-			res.status(500).json({
-				message: "Database not connected",
-			});
-		}
 	}
 };
 

@@ -28,7 +28,7 @@ const Reports = () => {
 	};
 
 	const formatDate = (date: string): string => {
-		return new Date(date).toLocaleDateString("en-IN", {
+		return new Date(`${date}T00:00:00`).toLocaleDateString("en-IN", {
 			day: "2-digit",
 			month: "numeric",
 			year: "numeric",
@@ -58,6 +58,8 @@ const Reports = () => {
 				return "text-(--count-purple)";
 			case "cancelled":
 				return "text-(--count-warning)";
+			case "reset":
+				return "text-cyan-500";
 			default:
 				return "";
 		}
@@ -73,7 +75,7 @@ const Reports = () => {
 		if (!reportData || reportData.length === 0) return;
 		try {
 			const formatDateCSV = (value: string): string => {
-				const d = new Date(value);
+				const d = new Date(`${value}T00:00:00`);
 				return value && !isNaN(d.getTime()) ? d.toLocaleDateString("en-GB") : "-";
 			};
 
@@ -94,12 +96,16 @@ const Reports = () => {
 
 			const formattedData = reportData.map((item, index) => ({
 				"S.No": index + 1,
-				Date: formatDateCSV(item.timestamp),
+				Date: formatDateCSV(item.date),
 				Location: item.location,
 				Room: roomNumberFormat(item?.room) || "-",
 				DeviceType: item.device_type || "-",
+			/* ------------------------- Card Number Hide ----------------------------- */
+			/* 	"Card Number": item.card_number || "-", */
+			/* ------------------------- Attended Hide ----------------------------- */
+			/* 	Attended: item.attended || "-", */
 				"Call Raised": item.callType || "-",
-				"Call Raised Time": formatTimeCSV(item.timestamp),
+				"Call Raised Time": formatTimeCSV(item.startTime),
 
 				Emergency: item.emergency || "-",
 				"Emergency Time": formatTimeCSV(item.emergencyTime),
@@ -107,8 +113,8 @@ const Reports = () => {
 				"Code Blue": item.codeBlue || "-",
 				"Code Blue Time": formatTimeCSV(item.codeBlueTime),
 
-				"Ack / Canceled": item.status || "-",
-				"Ack / Cancel Time": formatTimeCSV(item.statusTime),
+				"Ack / Canceled / Reset": item.status || "-",
+				"Ack / Cancel /Reset Time": formatTimeCSV(item.statusTime),
 
 				Duration: formatDuration(item.duration),
 				"Emp No": item.emp_no || "-",
@@ -151,10 +157,12 @@ const Reports = () => {
 	};
 
 	const gridStyle: React.CSSProperties = {
-		display: "grid",
-		gridTemplateColumns: `
-    60px 
-    repeat(16, minmax(150px, 1fr))
+	  display: "grid",
+	gridTemplateColumns: `
+    60px
+    repeat(14, minmax(150px, 1fr))
+    minmax(240px, 1.5fr)
+    minmax(240px, 1.6fr)
   `,
 	};
 
@@ -163,7 +171,7 @@ const Reports = () => {
 	const rowVirtualizer = useVirtualizer({
 		count: reportData?.length,
 		getScrollElement: () => parentRef.current,
-		estimateSize: () => 50,
+		estimateSize: () => 53,
 		overscan: 5,
 	});
 
@@ -286,6 +294,14 @@ const Reports = () => {
 								<div className="border-r border-b text-white  py-3 bg-(--table-header) border-(--table-border)">
 									Device
 								</div>
+								{/* ------------------ Card Number Hide ---------------------- */}
+								{/* <div className="border-r border-b text-white py-3 bg-(--table-header) border-(--table-border)">
+									Card Number
+								</div> */}
+								{/* ------------------ Attended Hide ---------------------- */}
+								{/* <div className="border-r border-b text-white py-3 bg-(--table-header) border-(--table-border)">
+									Attended
+								</div> */}
 								<div className="border-r border-b text-white  py-3 bg-(--table-header) border-(--table-border)">
 									Call Raised
 								</div>
@@ -341,7 +357,7 @@ const Reports = () => {
 												top: 0,
 												left: 0,
 												width: "100%",
-												height: "50px",
+												height: "53px",
 												transform: `translateY(${virtualRow.start}px)`,
 											}}
 											onClick={() =>
@@ -361,7 +377,7 @@ const Reports = () => {
 											<div
 												className={`border-r border-b uppercase border-(--table-border) py-3 transition 
               ${selectedRow === virtualRow.index ? "bg-(--table-hover)" : "group-hover:bg-(--table-hover)"}`}>
-												{formatDate(item.timestamp)}
+								{formatDate(item.date)}
 											</div>
 											<div
 												className={`uppercase border-r border-b border-(--table-border) py-3 transition 
@@ -379,6 +395,14 @@ const Reports = () => {
               ${selectedRow === virtualRow.index ? "bg-(--table-hover)" : "group-hover:bg-(--table-hover)"}`}>
 												{item.device_type || "-"}
 											</div>
+											{/* ------------------ Card Number Hide ---------------------- */}
+											{/* <div className={`uppercase border-r border-b border-(--table-border) py-3 transition ${selectedRow === virtualRow.index ? "bg-(--table-hover)" : "group-hover:bg-(--table-hover)"}`}>
+												{item.card_number || "-"}
+											</div> */}
+											{/* ------------------ Attended Hide ---------------------- */}
+											{/* <div className={`uppercase border-r border-b border-(--table-border) py-3 transition ${selectedRow === virtualRow.index ? "bg-(--table-hover)" : "group-hover:bg-(--table-hover)"}`}>
+												{item.attended || "-"}
+											</div> */}
 
 											<div
 												className={`uppercase border-r border-b border-(--table-border) py-3 transition 
@@ -390,7 +414,7 @@ const Reports = () => {
 											<div
 												className={`uppercase border-r border-b border-(--table-border) py-3 transition 
               ${selectedRow === virtualRow.index ? "bg-(--table-hover)" : "group-hover:bg-(--table-hover)"}`}>
-												{new Date(item.timestamp).toLocaleTimeString("en-IN")}
+								{new Date(item.startTime).toLocaleTimeString("en-IN")}
 											</div>
 
 											<div

@@ -41,3 +41,20 @@ temp/
 *.pid
 *.seed
 *.pid.lock
+
+# OpenCode local MCP config
+opencode.json
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Local MCP / Playwright temp files
+.playwright-mcp/
+.tmp-playwright-mcp*
+
+AGENTS.md

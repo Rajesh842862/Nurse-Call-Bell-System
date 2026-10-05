@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { io,} from "socket.io-client";
 import type { Socket } from "socket.io-client";
 import { AlertContext } from "./AlertContext";
 import { Alert, AlertContextValue, ConnectionStatus, ProcessedReport, ReportResponse, ServerError } from "../types";
 import useDemoShortcut from "../hooks/useDemoShortcut";
 
-const API_URL = import.meta.env.VITE_SERVER_APP_URL as string;
+const API_URL = import.meta.env.VITE_SERVER_APP_URL || "";
+const SOCKET_PATH = import.meta.env.VITE_SOCKET_PATH || "/socket.io";
 
 interface AlertProviderProps {
 	children: React.ReactNode;
@@ -38,6 +39,7 @@ const AlertProvider = ({ children }: AlertProviderProps) => {
 			code_blue_count: 0,
 			cancel_count: 0,
 			acknowledged_count: 0,
+			reset_count: 0,
 			bed_count: 0,
 			toilet_count: 0,
 		},
@@ -58,7 +60,7 @@ const AlertProvider = ({ children }: AlertProviderProps) => {
 		isUnlockedRef.current = true;
 		setIsUnlocked(true);
 
-		const readyAudio = new Audio("/System Ready.mp3");
+		const readyAudio = new Audio(`${import.meta.env.BASE_URL}System Ready.mp3`);
 
 		readyAudio.onended = () => {
 			const currentAlerts = alertsRef.current;
@@ -98,6 +100,21 @@ const AlertProvider = ({ children }: AlertProviderProps) => {
 		}
 	};
 
+	const resetAlerts = useCallback(async (): Promise<void> => {
+		try {
+			const res = await fetch(`${API_URL}/api/reset-alerts`, { method: "POST" });
+			const data = await res.json();
+
+			if (data.success) {
+				stopCurrentAudio();
+				setAlerts([]);
+				alertsRef.current = [];
+			}
+		} catch (err) {
+			console.error("Reset alerts failed:", err);
+		}
+	}, []);
+
 	const playAlertSound = (alert: Alert): void => {
 		if (!isUnlockedRef.current || !alert) return;
 
@@ -131,7 +148,7 @@ const AlertProvider = ({ children }: AlertProviderProps) => {
 
 		const playSiren = () => {
 			if (!sirenRef.current) {
-				sirenRef.current = new Audio("/sirensound.mp3");
+				sirenRef.current = new Audio(`${import.meta.env.BASE_URL}sirensound.mp3`);
 			}
 
 			const siren = sirenRef.current;
@@ -153,7 +170,7 @@ const AlertProvider = ({ children }: AlertProviderProps) => {
 	const handleNewAlert = (data: Alert): void => {
 		const callType = data.callType?.toLowerCase();
 
-		if (callType === "cancel" || callType === "acknowledged") {
+		if (callType === "cancel" || callType === "acknowledged" || callType === "reset") {
 			setAlerts((prev) => {
 				const updated = prev.filter(
 					(a) =>
@@ -205,7 +222,7 @@ const AlertProvider = ({ children }: AlertProviderProps) => {
 					return (b.order ?? 0) - (a.order ?? 0);
 				}
 
-				return b.id - a.id;
+				return b.sno - a.sno;
 			});
 			alertsRef.current = updated;
 
@@ -217,9 +234,10 @@ const AlertProvider = ({ children }: AlertProviderProps) => {
 	};
 
 	useEffect(() => {
-		socketRef.current = io(API_URL, {
-			transports: ["websocket"],
-		});
+		socketRef.current = io(window.location.origin, {
+		path: SOCKET_PATH,
+		transports: ["polling", "websocket"],
+	});
 
 		const socket = socketRef.current;
 
@@ -239,7 +257,7 @@ const AlertProvider = ({ children }: AlertProviderProps) => {
 
 				if (pa !== pb) return pa - pb;
 
-				return b.id - a.id;
+				return b.sno - a.sno;
 			});
 			alertsRef.current = sorted;
 			setAlerts(sorted);
@@ -271,9 +289,16 @@ const AlertProvider = ({ children }: AlertProviderProps) => {
 			setTimeout(() => setServerError(null), 6000);
 		});
 
+		socket.on("reset-alerts", () => {
+			stopCurrentAudio();
+			setAlerts([]);
+			alertsRef.current = [];
+		});
+
 		return () => {
 			socket.off("new-alert", handleNewAlert);
 			socket.off("existing-alerts");
+			socket.off("reset-alerts");
 			socket.disconnect();
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -295,6 +320,7 @@ const AlertProvider = ({ children }: AlertProviderProps) => {
 		alertCounter,
 		alertsRef,
 		enableAudio,
+		resetAlerts,
 		from,
 		setFrom,
 		to,

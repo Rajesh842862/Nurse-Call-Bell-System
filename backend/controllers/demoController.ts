@@ -6,23 +6,20 @@ const ALLOWED_CALL_TYPES = ["calling", "emergency", "code blue", "cancel", "ackn
 
 const createDemoAlert = async (req: Request<unknown, unknown, DemoRequest>, res: Response): Promise<void> => {
   try {
-    const { room, floor, callType, device_type, uid, location, tower, placeType, attended, emp_no, name, designation } =
+    const { room, floor, callType, device_type, card_number, location, tower, placeType, attended, date, time, emp_no, name, designation } =
       req.body;
 
-    if (
-      !room?.trim() ||
-      !floor?.trim() ||
-      !callType?.trim() ||
-      !device_type?.trim() ||
-      !uid?.trim() ||
-      !location?.trim() ||
-      !tower?.trim() ||
-      !placeType?.trim()
-    ) {
+    const requiredValues = [room, floor, callType, device_type, card_number, location, tower, placeType, attended, date, time, emp_no, name, designation];
+    if (requiredValues.some((value) => typeof value !== "string" || value.trim() === "")) {
       res.status(400).json({
         success: false,
         message: "Required fields are missing.",
       });
+      return;
+    }
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !/^\d{2}:\d{2}:\d{2}$/.test(time)) {
+      res.status(400).json({ success: false, message: "date and time must use YYYY-MM-DD and HH:mm:ss." });
       return;
     }
 
@@ -40,17 +37,18 @@ const createDemoAlert = async (req: Request<unknown, unknown, DemoRequest>, res:
             floor,
             callType,
             device_type,
-            uid,
+            card_number,
             location,
             tower,
             placeType,
             attended,
-            timestamp,
+            date,
+            time,
             emp_no,
             name,
             designation
         )
-        VALUES(?,?,?,?,?,?,?,?,?,NOW(),?,?,?)
+        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     `;
 
     await pool.execute(sql, [
@@ -58,11 +56,13 @@ const createDemoAlert = async (req: Request<unknown, unknown, DemoRequest>, res:
       floor,
       callType,
       device_type,
-      uid,
+      card_number,
       location,
       tower,
       placeType,
       attended,
+      date,
+      time,
       emp_no,
       name,
       designation,

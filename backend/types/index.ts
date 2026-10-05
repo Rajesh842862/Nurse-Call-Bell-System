@@ -1,54 +1,34 @@
 import { RowDataPacket } from "mysql2";
 
-export interface NcbEspRow extends RowDataPacket {
-	id: number;
+export interface NcbEspData {
+	sno: number;
 	room: string;
+	floor: string;
 	device_type: string;
 	callType: string;
+	card_number: string;
 	location: string;
-	timestamp: string;
-	emp_no?: string;
-	name?: string;
-	designation?: string;
+	tower: string;
+	placeType: string;
+	attended: string;
+	date: string;
+	time: string;
+	time_of_DB: string;
+	emp_no: string;
+	name: string;
+	designation: string;
 }
 
-export interface ActiveAlert {
-	id: number;
-	room: string;
-	device_type: string;
-	callType: string;
-	location: string;
-	timestamp: string;
-	emp_no?: string;
-	name?: string;
-	designation?: string;
+export interface NcbEspRow extends RowDataPacket, NcbEspData {}
+
+export interface AlertData extends NcbEspData {
 	audio: string;
 	order?: number;
 }
 
-export interface AlertData {
-	id: number;
-	room: string;
-	device_type: string;
-	callType: string;
-	location: string;
-	timestamp: string;
-	emp_no?: string;
-	name?: string;
-	designation?: string;
-	audio: string;
-}
+export type ActiveAlert = AlertData;
 
-export interface ProcessedReport {
-	id: number;
-	room: string;
-	device_type: string;
-	callType: string;
-	location: string;
-	timestamp: string;
-	emp_no?: string;
-	name?: string;
-	designation?: string;
+export interface ProcessedReport extends Omit<AlertData, "audio" | "order"> {
 	startTime: string;
 	callRaised: string;
 	emergency: string;
@@ -67,6 +47,7 @@ export interface ReportCounts {
 	code_blue_count: number;
 	cancel_count: number;
 	acknowledged_count: number;
+	reset_count: number;
 	bed_count: number;
 	toilet_count: number;
 }

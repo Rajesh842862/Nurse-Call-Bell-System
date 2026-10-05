@@ -4,12 +4,15 @@ import RootLayout from "./Layouts/RootLayout";
 import AlertProvider from "./context/AlertProvider";
 import ThemeProvider from "./context/Theme/ThemeProvider";
 
+const base = import.meta.env.BASE_URL;
+const basename = base === "/" ? undefined : base.replace(/\/$/, "");
+
 createRoot(document.getElementById("root")!).render(
-	<ThemeProvider>
-		<BrowserRouter>
-			<AlertProvider>
-				<RootLayout />
-			</AlertProvider>
-		</BrowserRouter>
-	</ThemeProvider>
+  <ThemeProvider>
+    <BrowserRouter basename={basename} >
+      <AlertProvider>
+        <RootLayout />
+      </AlertProvider>
+    </BrowserRouter>
+  </ThemeProvider>,
 );

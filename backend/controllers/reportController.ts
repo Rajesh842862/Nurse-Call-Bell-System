@@ -20,14 +20,11 @@ const getAllReports = async (req: Request<unknown, unknown, unknown, ReportQuery
 		const query = `
       SELECT *
       FROM ncb_esp
-      WHERE timestamp >= ?
-        AND timestamp <= ?
-      ORDER BY timestamp DESC
+      WHERE date BETWEEN ? AND ?
+      ORDER BY date DESC, time DESC, sno DESC
     `;
 
-		const from = `${fromDate} 00:00:00`;
-		const to = `${toDate} 23:59:59`;
-		const [reports] = await pool.query(query, [from, to]);
+		const [reports] = await pool.query(query, [fromDate, toDate]);
 		const processedReports = reportGenerate(reports as any);
 
 		const counts: ReportCounts = {
@@ -37,6 +34,7 @@ const getAllReports = async (req: Request<unknown, unknown, unknown, ReportQuery
 			code_blue_count: 0,
 			cancel_count: 0,
 			acknowledged_count: 0,
+			reset_count: 0,
 			bed_count: 0,
 			toilet_count: 0,
 		};
@@ -90,6 +88,8 @@ const getAllReports = async (req: Request<unknown, unknown, unknown, ReportQuery
 				counts.cancel_count++;
 			} else if (item.status === "Acknowledged") {
 				counts.acknowledged_count++;
+			} else if (item.status === "Reset") {
+				counts.reset_count++;
 			}
 		}
 

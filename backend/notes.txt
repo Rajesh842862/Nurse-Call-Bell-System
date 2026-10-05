@@ -1,3 +1,30 @@
 npm init -y
 npm install express@5.2.1 socket.io@4.8.3 cors dotenv mysql2@3.17.2 node-edge-tts@1.2.10
 npm install nodemon --save-dev
+
+
+CREATE DATABASE mqtt_esp;
+
+USE mqtt_esp;
+
+CREATE TABLE `ncb_esp` (
+    `sno` INT(11) NOT NULL AUTO_INCREMENT,
+    `room` VARCHAR(35) NOT NULL,
+    `floor` VARCHAR(20) NOT NULL,
+    `callType` VARCHAR(20) NOT NULL,
+    `device_type` VARCHAR(30) NOT NULL,
+    `card_number` VARCHAR(20) NOT NULL,
+    `location` VARCHAR(50) NOT NULL,
+    `tower` VARCHAR(20) NOT NULL,
+    `placeType` VARCHAR(30) NOT NULL,
+    `attended` VARCHAR(100) NOT NULL,
+    `date` DATE NOT NULL,
+    `time` TIME NOT NULL,
+    `time_of_DB` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `emp_no` VARCHAR(100) NOT NULL,
+    `name` VARCHAR(100) NOT NULL,
+    `designation` VARCHAR(100) NOT NULL,
+
+    PRIMARY KEY (`sno`),
+    KEY `idx_date` (`date`)
+);

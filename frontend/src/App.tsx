@@ -9,17 +9,23 @@ import CallingToilet from "./assets/CallingToilet.png";
 import EmergencyBed from "./assets/EmergencyBed.png";
 import EmergencyToilet from "./assets/EmergencyToilet.png";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import heartBeat from "./assets/wired-outline-1249-heart-beat-loop-cycle.gif";
 import NavBar from "./components/NavBar";
+import ResetConfirmModal from "./components/ResetConfirmModal";
 import Slider from "./components/Slider";
 import useTheme from "./context/Theme/useTheme";
 import useAlert from "./context/useAlert";
 
 function App() {
-	const { alerts, enableAudio, isUnlocked, connectionStatus, serverError } = useAlert();
+	const { alerts, enableAudio, isUnlocked, connectionStatus, serverError, resetAlerts } = useAlert();
 	const { theme } = useTheme();
 	const [isMobile, setIsMobile] = useState(window.innerWidth < 740);
+	const [showResetModal, setShowResetModal] = useState(false);
+
+	const closeResetModal = useCallback((): void => {
+		setShowResetModal(false);
+	}, []);
 
 	useEffect(() => {
 		const handleResize = () => {
@@ -48,7 +54,7 @@ function App() {
 				theme: theme === "light" ? "light" : "dark",
 				toastId: "server-error",
 				transition: Bounce,
-				style: { zIndex: 99, width: "300px", fontSize: "13px", top: "100px", left: "-30px" },
+				style: { fontSize: "13px", left: "-35px" },
 			});
 		}
 	}, [serverError, theme]);
@@ -59,37 +65,55 @@ function App() {
 
 	if (codeBlue && isUnlocked) {
 		return (
-			<div className="bluecode-screen relative  ">
-				<img className="size-28" src={heartBeat} alt="beat" />
-				<div className="bluecode-title  flex justify-center items-center">CODE BLUE </div>
-				<div className="bluecode-room ">ROOM {roomNumberFormat(codeBlue.room)}</div>
-				<span className=" text-[#ffffff99] bluecode-timeStamp font-sans tracking-widest uppercase">
-					{new Date(codeBlue?.timestamp)
-						.toLocaleString("en-GB", {
-							month: "2-digit",
-							day: "2-digit",
-							year: "numeric",
-							hour: "2-digit",
-							minute: "2-digit",
-							second: "2-digit",
-							hour12: true,
-						})
-						.replace(/\//g, "-")
-						.replace(",", "")}
-				</span>
-				{codeBlue?.device_type.toLowerCase().includes("bed") && <img className="w-25" src={BlueCodeBed} alt="Bed" />}
-				{isToilet.some((r) => codeBlue?.device_type.toLowerCase().includes(r)) && (
-					<img className="w-27" src={BlueCodeToilet} alt="Toilet" />
-				)}
-				<div className="bluecode-location">{codeBlue?.device_type} </div>
+			<>
+				<div className="bluecode-screen relative  ">
+					<img className="size-28" src={heartBeat} alt="beat" />
+					<div className="bluecode-title  flex justify-center items-center">CODE BLUE </div>
+					<div className="bluecode-room ">ROOM {roomNumberFormat(codeBlue.room)}</div>
+					<span className=" text-[#ffffff99] bluecode-timeStamp font-sans tracking-widest uppercase">
+						{new Date(`${codeBlue.date}T${codeBlue.time}`)
+							.toLocaleString("en-GB", {
+								month: "2-digit",
+								day: "2-digit",
+								year: "numeric",
+								hour: "2-digit",
+								minute: "2-digit",
+								second: "2-digit",
+								hour12: true,
+							})
+							.replace(/\//g, "-")
+							.replace(",", "")}
+					</span>
+					{codeBlue?.device_type.toLowerCase().includes("bed") && <img className="w-25" src={BlueCodeBed} alt="Bed" />}
+					{isToilet.some((r) => codeBlue?.device_type.toLowerCase().includes(r)) && (
+						<img className="w-27" src={BlueCodeToilet} alt="Toilet" />
+					)}
+					<div className="bluecode-location">{codeBlue?.device_type} </div>
 
-				<div className="flex items-center gap-4  absolute top-6 right-6">
-					<div className="border w-4 h-4 flex justify-center items-center rounded-full  animate-ping">
-						<div className="w-2 h-2 bg-blue-100    rounded-full " />
+					<div className="flex items-center gap-4  absolute top-6 right-6">
+						<div className="border w-4 h-4 flex justify-center items-center rounded-full  animate-ping">
+							<div className="w-2 h-2 bg-blue-100    rounded-full " />
+						</div>
+						<span className="text-[#ffffff99] text-sm  tracking-[5px]">ACTIVE</span>
 					</div>
-					<span className="text-[#ffffff99] text-sm  tracking-[5px]">ACTIVE</span>
+
+					<button
+						onClick={() => setShowResetModal(true)}
+						className="absolute bottom-8 left-1/2 -translate-x-1/2 px-8 py-3 bg-white/10 hover:bg-white/20 border border-white/30 rounded-lg text-white text-lg tracking-widest uppercase cursor-pointer transition-colors backdrop-blur-sm"
+					>
+						RESET CODE BLUE
+					</button>
 				</div>
-			</div>
+
+				<ResetConfirmModal
+					isOpen={showResetModal}
+					onConfirm={() => {
+						setShowResetModal(false);
+						resetAlerts();
+					}}
+					onCancel={closeResetModal}
+				/>
+			</>
 		);
 	}
 
@@ -138,11 +162,11 @@ function App() {
 					}}
 				>
 					{alerts?.map((alert) => {
-						const id = alert?.id;
+						const sno = alert.sno;
 
 						return (
 							<div
-								key={id}
+								key={sno}
 								className={`alert-card  h-full ${isMobile && "min-h-125"} w-full ${alert.callType?.toLowerCase().replace(" ", "-")}`}
 							>
 								<div className="alert-type flex justify-center  gap-2 items-center">
@@ -162,7 +186,7 @@ function App() {
 
 								<div className="alert-location">
 									<span className="block mb-3 ">
-										{new Date(alert?.timestamp)
+										{new Date(`${alert.date}T${alert.time}`)
 											.toLocaleString("en-GB", {
 												month: "2-digit",
 												day: "2-digit",
@@ -210,7 +234,7 @@ function App() {
 					})}
 				</div>
 			)}
-			<ToastContainer limit={3} />
+			<ToastContainer limit={3} style={{ width: "300px",  top: "120px", }} />
 		</div>
 	);
 }
